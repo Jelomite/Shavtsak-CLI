@@ -5,52 +5,10 @@ class Shavtsak:
         All you need to do is to specify the soldiers that are in the schedule.
         You can later reduce the soldiers for a specific day or period of time.
         """
-        # heck of a data structure
-        self.schedule = {
-            'sunday': {
-                'kitchen': [],
-                'morning': [],
-                'evening': [],
-                'night': []
-            },
-            'monday': {
-                'kitchen': [],
-                'morning': [],
-                'evening': [],
-                'night': []
-            },
-            'tuesday': {
-                'kitchen': [],
-                'morning': [],
-                'evening': [],
-                'night': []
-            },
-            'wednesday': {
-                'kitchen': [],
-                'morning': [],
-                'evening': [],
-                'night': []
-            },
-            'thursday': {
-                'kitchen': [],
-                'morning': [],
-                'evening': [],
-                'night': []
-            },
-            'friday': {
-                'kitchen': [],
-                'morning': [],
-                'evening': [],
-                'night': []
-            },
-            'saturday': {
-                'kitchen': [],
-                'morning': [],
-                'evening': [],
-                'night': []
-            },
-        }
-        # TODO: this is just for a week, we need to make this timeless!
+        self.days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday2']
+        self.watches = ['kitchen', 'morning', 'evening', 'night']
+        # building the schedule dictionary based on two lists, the days and the watches.
+        self.schedule = {day: {watch: [] for watch in self.watches} for day in self.days}
         self.soldiers = soldiers  # full list of all soldiers .
         self.reduced = []  # the segments in which the soldiers may differ.
 
@@ -59,9 +17,8 @@ class Shavtsak:
         # you know it's gonna be the real deal when you import tabulate
         table = [['/', 'kitchen', 'morning', 'evening', 'night']]
         assignments = table[0][1:]  # pass by value...
-        days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
 
-        for day in days:
+        for day in self.days:
             watches = [day]
             for watch in assignments:
                 watches.append(', '.join(map(str, self.schedule[day][watch])))
@@ -98,10 +55,10 @@ class Shavtsak:
                 raise ValueError
 
         if type(day) is int:
-            day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][day]
+            day = self.days[day]
 
         if type(watch) is int:
-            watch = ['kitchen', 'morning', 'evening', 'night'][watch]
+            watch = self.watches[watch]
 
         before_assignment = self.schedule[day][watch]
         self.schedule[day][watch] = soldiers
@@ -119,10 +76,10 @@ class Shavtsak:
         :return: list of soldiers in the desired watch
         """
         if type(day) is int:
-            day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][day]
+            day = self.days[day]
 
         if type(watch) is int:
-            watch = ['kitchen', 'morning', 'evening', 'night'][watch]
+            watch = self.watches[watch]
 
         return self.schedule[day][watch]
 
@@ -134,36 +91,32 @@ class Shavtsak:
         :param watch: desired watch, str or ID (0 - kitchen, 1 - morning... 2 - night)
         :return: amount of assignments the soldier didn't do and the last assignment he did.
         """
-        days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-        watches = ['kitchen', 'morning', 'evening', 'night']
         if type(day) is str:
-            day = days.index(day)
+            day = self.days.index(day)
         if type(watch) is str:
-            watch = watches.index(watch)
+            watch = self.watches.index(watch)
 
         watch_id = day * 4 + watch
 
         for wid in reversed(range(watch_id)):
             if soldier in self.get(int(wid / 4), wid % 4):
-                return watch_id - wid, watches[wid % 4]
+                return watch_id - wid, self.watches[wid % 4]
         return watch_id, None
 
     def next(self, soldier, day: (str, int), watch: (str, int)):
         """
         just like self.last(), but returns the next assignment of soldier.
         """
-        days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-        watches = ['kitchen', 'morning', 'evening', 'night']
         if type(day) is str:
-            day = days.index(day)
+            day = self.days.index(day)
         if type(watch) is str:
-            watch = watches.index(watch)
+            watch = self.watches.index(watch)
 
         watch_id = day * 4 + watch
 
         for wid in range(watch_id, 28):
             if soldier in self.get(int(wid / 4), wid % 4):
-                return wid - watch_id, watches[wid % 4]
+                return wid - watch_id, self.watches[wid % 4]
         return watch_id, None
 
     def _sort(self, day, watch):
@@ -196,14 +149,14 @@ class Shavtsak:
         :param n_soldiers: amount of soldiers to assign to kitchen.
         :return: calculated Soldier for the kitchen to be assigned.
         """
-        if day in ('sunday', 0):  # the week starts at sunday, we can't just check the previous day
+        if day in (self.days[0], 0):  # the week starts at sunday, we can't just check the previous day
             # until this is fixed we just raise this shitty error
             raise NotImplementedError
 
         if type(day) is str:
             # We want to iterate to the previous day. Assumption made that it's not the first day.
             # In that case, we will never get ID of day - 1
-            day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].index(day)
+            day = self.days.index(day)
 
         s = self._sort(day, 'kitchen')  # getting the current day sort
 
@@ -232,18 +185,16 @@ class Shavtsak:
         # TODO: find a better conversion method.
 
         if type(sday) is str:
-            days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-            sday = days.index(sday)
+            sday = self.days.index(sday)
 
         if type(swatch) is str:
-            swatch = ['kitchen', 'morning', 'evening', 'night'].index(swatch)
+            swatch = self.watches.index(swatch)
 
         if type(eday) is str:
-            days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-            eday = days.index(eday)
+            eday = self.days.index(eday)
 
         if type(ewatch) is str:
-            ewatch = ['kitchen', 'morning', 'evening', 'night'].index(ewatch)
+            ewatch = self.watches.index(ewatch)
 
         start_id = sday * 4 + swatch
         end_id = eday * 4 + ewatch
@@ -262,11 +213,10 @@ class Shavtsak:
 
         # we want to convert the days and the watches to int so we could convert them into IDs
         if type(day) is str:
-            days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-            day = days.index(day)
+            day = self.days.index(day)
 
         if type(watch) is str:
-            watch = ['kitchen', 'morning', 'evening', 'night'].index(watch)
+            watch = self.watches.index(watch)
 
         # we assume that we don't have two reductions of the same soldier at the same day.
         # If it does, it'll raise an error of ValueError, because the soldier will be removed from the list
@@ -293,10 +243,10 @@ class Shavtsak:
         :return: returns a list of soldiers for assignment based on number of soldiers
         """
         if type(day) is int:
-            day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][day]
+            day = self.days[day]
 
         if type(watch) is int:
-            watch = ['kitchen', 'morning', 'evening', 'night'][watch]
+            watch = self.watches[watch]
 
         if self.schedule[day][watch] and not force and n_soldiers is 2:
             # if there's an assignment in this particular day and watch
