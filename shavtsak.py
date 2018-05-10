@@ -152,8 +152,19 @@ class Shavtsak:
         """
         just like self.last(), but returns the next assignment of soldier.
         """
-        # TODO: implement this function
-        raise NotImplementedError
+        days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+        watches = ['kitchen', 'morning', 'evening', 'night']
+        if type(day) is str:
+            day = days.index(day)
+        if type(watch) is str:
+            watch = watches.index(watch)
+
+        watch_id = day * 4 + watch
+
+        for wid in range(watch_id, 28):
+            if soldier in self.get(int(wid / 4), wid % 4):
+                return wid - watch_id, watches[wid % 4]
+        return watch_id, None
 
     def _sort(self, day, watch):
         """
@@ -161,10 +172,8 @@ class Shavtsak:
         :return: list of soldiers
         """
         soldiers = self._gen_soldiers(day, watch)
-
-        for soldier in soldiers:
-            soldier.sad = self.last(soldier, day, watch)[0]
-        sorted_s = sorted(soldiers, key=lambda s: self.last(s, day, watch), reverse=True)
+        skey = lambda s: self.last(s, day, watch)[0] + self.next(s, day, watch)[0]
+        sorted_s = sorted(soldiers, key=skey, reverse=True)
         # remove the kitchen soldier in that day, a soldier that is in kitchen shouldn't be checked.
         try:
             today_kitchen = self.get(day, 'kitchen')
