@@ -196,11 +196,12 @@ class Shavtsak:
             # In that case, we will never get ID of day - 1
             day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].index(day)
 
-        s = self._sort(day, 'kitchen')  # getting the previous day sort
+        s = self._sort(day, 'kitchen')  # getting the current day sort
 
         # remove previous day soldiers from kitchen
         for ksoldier in self.get(day - 1, 0):
-            s.remove(ksoldier)
+            if ksoldier in s:
+                s.remove(ksoldier)
 
         # we cant allow people with pazam to be assigned to kitchen, so we have to filter them out.
         filtered = filter(lambda soldier: soldier.pazam < 2, s)
@@ -212,6 +213,7 @@ class Shavtsak:
         """
         We can add periods in the schedule where we don't have the full list of soldiers.
         It can be for a single watch, or for an extended amount of watches and days.
+        :param soldiers: list of soldiers to remove from the list.
         :return: True if the addition was successful. Otherwise it throws an exception.
         """
         # TODO: this should be a smart function with good a design.
@@ -257,17 +259,20 @@ class Shavtsak:
         if type(watch) is str:
             watch = ['kitchen', 'morning', 'evening', 'night'].index(watch)
 
-        # we assume that we don't have two reductions at the same day.
+        # we assume that we don't have two reductions of the same soldier at the same day.
+        # If it does, it'll raise an error of ValueError, because the soldier will be removed from the list
+        # hence, he can't be removed again at later iteration.
         current_watch_id = day * 4 + watch  # this is a simple representation of the watch and day of week.
-
+        new_soldiers = self.soldiers.copy()
         for soldiers, start, end in self.reduced:
             # in case the current watch is in range of a reduced amount of soldiers,
             # we return the new soldiers that are listed in out list
             if current_watch_id in range(start, end + 1):
-                return soldiers
+                for soldier in soldiers:
+                    new_soldiers.remove(soldier)
 
-        # if this day isn't in range, we return the full list of soldiers.
-        return self.soldiers
+        # once we removed all the relevant soldiers from our list, we can return it.
+        return new_soldiers
 
     def predict(self, day, watch, n_soldiers=2, force=False):
         """
