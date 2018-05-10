@@ -5,7 +5,7 @@ class Shavtsak:
         All you need to do is to specify the soldiers that are in the schedule.
         You can later reduce the soldiers for a specific day or period of time.
         """
-        self.days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday2']
+        self.days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
         self.watches = ['kitchen', 'morning', 'evening', 'night']
         # building the schedule dictionary based on two lists, the days and the watches.
         self.schedule = {day: {watch: [] for watch in self.watches} for day in self.days}
