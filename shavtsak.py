@@ -229,6 +229,10 @@ class Shavtsak:
         # we cant allow people with pazam to be assigned to kitchen, so we have to filter them out.
         filtered = filter(lambda soldier: soldier.pazam < 2, s)
 
+        if len(filtered) < n_soldiers:
+            print('Error: number of soldiers is insufficient')
+            # TODO: do something with this, maybe raise the pazam threshold.
+            
         # all that's left is to assign the first n soldiers to the kitchen
         return list(filtered)[0:n_soldiers]
 
