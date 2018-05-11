@@ -18,7 +18,7 @@ class Shavtsak:
         varnames = f.__code__.co_varnames
 
         def wrapper(*a, **kw):
-            kw['explicit_params'] = [varnames[:len(a)]] + [kw.keys()]
+            kw['explicit_params'] = list(varnames[:len(a)]) + list(kw.keys())
             return f(*a, **kw)
         return wrapper
 
@@ -243,10 +243,10 @@ class Shavtsak:
         :return: returns a list of soldiers for assignment based on number of soldiers
         """
         if watch in ('kitchen', 0):
-            if 'n_sodliers' in explicit_params:
-                return kitchen(day, n_soldiers)
+            if 'n_soldiers' in explicit_params:
+                return self.kitchen(day, n_soldiers)
             else:
-                return kitchen(day, 1)
+                return self.kitchen(day, 1)
 
         if type(day) is int:
             day = self.days[day]
