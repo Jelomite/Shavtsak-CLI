@@ -11,11 +11,12 @@ class Shavtsak:
         self.schedule = {day: {watch: [] for watch in self.watches} for day in self.days}
         self.soldiers = soldiers  # full list of all soldiers .
         self.reduced = []  # the segments in which the soldiers may differ.
+        self.name = ''
 
     def __str__(self):
         from tabulate import tabulate
         # you know it's gonna be the real deal when you import tabulate
-        table = [['/', 'kitchen', 'morning', 'evening', 'night']]
+        table = [[self.name] + self.watches]
         assignments = table[0][1:]  # pass by value...
 
         for day in self.days:
@@ -25,6 +26,14 @@ class Shavtsak:
             table.append(watches)
 
         return tabulate(table, tablefmt='fancy_grid', stralign='center')
+
+    def explicit_checker(f):
+        """ function decorator to check if an optional value is being set, even if it's default """
+        varnames = f.__code__.co_varnames
+        def wrapper(*a, **kw):
+            kw['explicit_params'] = [varnames[:len(a)]] + [kw.keys()]
+            return f(*a, **kw)
+        return wrapper
 
     def assign(self, soldiers: list, day: (str, int), watch: (str, int)):
         """
@@ -233,7 +242,8 @@ class Shavtsak:
         # once we removed all the relevant soldiers from our list, we can return it.
         return new_soldiers
 
-    def predict(self, day, watch, n_soldiers=2, force=False):
+    @explicit_checker
+    def predict(self, day, watch, n_soldiers=2, force=False, explicit_params=None):
         """
         predicts the watch that should be on the assigned day and watch
         :param day: desired day for prediction
@@ -242,6 +252,12 @@ class Shavtsak:
         :param force: if this flag is true, it will overwrite the watch no matter what
         :return: returns a list of soldiers for assignment based on number of soldiers
         """
+        if watch in ('kitchen', 0):
+            if 'n_sodliers' in explicit_params:
+                return kitchen(day, n_soldiers)
+            else:
+                return kitchen(day, 1)
+
         if type(day) is int:
             day = self.days[day]
 
