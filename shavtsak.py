@@ -285,7 +285,6 @@ class Soldier:
     def __init__(self, name, pazam):
         self.name = name
         self.pazam = pazam
-        self.sad = 0
 
     def __str__(self):
         return str(self.name)
