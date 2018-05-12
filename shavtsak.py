@@ -163,6 +163,26 @@ class Shavtsak:
 
         return False
 
+    def reset(self):
+        """Resets the entire schedule"""
+        self.schedule = {day: {watch: [] for watch in self.watches} for day in self.days}
+        return None
+
+    def append(self, day: str, index=None):
+        """Appends another day to the schedule, if index isn't None, it can append it to a specific position"""
+        # Can't append an existing day to the schedule.
+        if day in self.day:
+            raise ValueError('Day already exists in schedule')
+
+        # Because index is none, we want to insert the day at the end of our days listself.
+        if index is None:
+            index = len(self.days)
+
+        self.days.insert(index, day)
+        # Sipmle addition of our watches dictionary to the new day that was created.
+        self.schedule[day] = {watch: [] for watch in self.watches}
+        return None
+
     def last(self, soldier, day: (str, int), watch: (str, int)):
         """
         checks last assignment of desired soldier, including the current watch
