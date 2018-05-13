@@ -270,7 +270,6 @@ class Shavtsak:
         :return: returns a list of soldiers for assignment based on number of soldiers
         """
         if watch in ('kitchen', 0):
-            print('kitchen')
             if 'n_soldiers' in explicit_params:
                 return self.kitchen(day, n_soldiers)
             else:
@@ -297,11 +296,10 @@ class Shavtsak:
         for id in range(len(self.days)*len(self.watches)): # iterate over the flattened dictionary
             _day = self.days[int(id / len(self.watches))]
             _watch = self.watches[id % len(self.watches)]
-            assignment = self.schedule[_day][_watch]            
+            assignment = self.schedule[_day][_watch]
             # we want to check if this specific watch is occupied. If not -> let's assign one.
             if not assignment:
                 prediction = self.predict(_day, _watch)
-                print(prediction)
                 self.assign(prediction, _day, _watch)
                 count += 1
         # we can should return something, why not the number of iterations?
@@ -309,8 +307,17 @@ class Shavtsak:
 
     def switch(self, s1: tuple, s2: tuple):
         """Switches between two soldiers at specific positions"""
-        # TODO: Implement the function
-        raise NotImplementedError
+        # get first target soldiers list from schedule
+        soldier1, day1, watch1 = s1
+        soldiers1 = self.get(day1, watch1)
+        # get second target soldiers list from schedule
+        soldier2, day2, watch2 = s2
+        soldiers2 = self.get(day2, watch2)
+        # re-assign the watches with a new list of soldiers, while replaceing the selected soldiers
+        # and keeping the same exact order they where before.
+        self.assign([soldier if soldier is not soldier1 else soldier2 for soldier in soldiers1], day1, watch1)
+        self.assign([soldier if soldier is not soldier2 else soldier1 for soldier in soldiers2], day2, watch2)
+        return None
 
     def __str__(self):
         from tabulate import tabulate
