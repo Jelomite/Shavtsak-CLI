@@ -319,6 +319,15 @@ class Shavtsak:
         self.assign([soldier if soldier is not soldier2 else soldier1 for soldier in soldiers2], day2, watch2)
         return None
 
+    def copy(self):
+        new = Shavtsak(self.soldiers)
+        new.days = self.days
+        new.watches = self.watches
+        new.schedule = self.schedule
+        new.reduced = .self.reduced
+        new.name = self.name
+        return new
+
     def __str__(self):
         from tabulate import tabulate
         # you know it's gonna be the real deal when you import tabulate
