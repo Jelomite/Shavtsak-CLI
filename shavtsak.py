@@ -92,8 +92,7 @@ class Shavtsak:
         """
         soldiers = self._gen_soldiers(day, watch)
 
-        def skey(s): return self.last(s, day, watch)[
-            0] + self.next(s, day, watch)[0]
+        def skey(s): return self.last(s, day, watch)[0] + self.next(s, day, watch)[0]
         sorted_s = sorted(soldiers, key=skey, reverse=True)
         # remove the kitchen soldier in that day, a soldier that is in kitchen shouldn't be checked.
         try:
@@ -199,8 +198,11 @@ class Shavtsak:
         watch_id = day * 4 + watch
 
         for wid in reversed(range(watch_id)):
-            if soldier in self.get(int(wid / 4), wid % 4):
-                return watch_id - wid, self.watches[wid % 4]
+            if soldier in self.get(int(wid / len(self.watches)), wid % 4):
+                n = watch_id - wid
+                last_watch = self.watches[wid % len(self.watches)]
+                n = n if last_watch is not 'kitchen' else n + 3
+                return n, last_watch
         return watch_id, None
 
     def next(self, soldier, day: (str, int), watch: (str, int)):
@@ -215,7 +217,7 @@ class Shavtsak:
         watch_id = day * 4 + watch
 
         for wid in range(watch_id, 28):
-            if soldier in self.get(int(wid / 4), wid % 4):
+            if soldier in self.get(int(wid / len(self.watches)), wid % 4):
                 return wid - watch_id, self.watches[wid % 4]
         return watch_id, None
 
@@ -231,8 +233,9 @@ class Shavtsak:
         :return: calculated Soldier for the kitchen to be assigned.
         """
         if day in (self.days[0], 0):  # the week starts at sunday, we can't just check the previous day
-            # until this is fixed we just raise this shitty error
-            raise NotImplementedError
+            # if this happens, we just pick random soldiers.
+            from random import shuffle
+            shuffle(self.soldiers)
 
         if type(day) is str:
             # We want to iterate to the previous day. Assumption made that it's not the first day.
@@ -247,14 +250,14 @@ class Shavtsak:
                 s.remove(ksoldier)
 
         # we cant allow people with pazam to be assigned to kitchen, so we have to filter them out.
-        filtered = filter(lambda soldier: soldier.pazam < 2, s)
+        filtered = list(filter(lambda soldier: soldier.pazam < 2, s))
 
-        if len(list(filtered)) < n_soldiers:
+        if len(filtered) < n_soldiers:
             print('Error: number of soldiers is insufficient')
             # TODO: do something with this, maybe raise the pazam threshold.
 
         # all that's left is to assign the first n soldiers to the kitchen
-        return list(filtered)[0:n_soldiers]
+        return filtered[0:n_soldiers]
 
     @explicit_checker
     def predict(self, day, watch, n_soldiers=2, force=False, explicit_params=None):
@@ -267,6 +270,7 @@ class Shavtsak:
         :return: returns a list of soldiers for assignment based on number of soldiers
         """
         if watch in ('kitchen', 0):
+            print('kitchen')
             if 'n_soldiers' in explicit_params:
                 return self.kitchen(day, n_soldiers)
             else:
@@ -285,6 +289,28 @@ class Shavtsak:
 
         soldiers = self._sort(day, watch)
         return soldiers[:n_soldiers]
+
+    def fill(self):
+        """Fills all empty spaces in schedule. NOTE: it uses the default values."""
+        for id in range(len(self.days)*len(self.watches)): # iterate over the flattened dictionary
+            _day = self.days[int(id / len(self.watches))]
+            _watch = self.watches[id % len(self.watches)]
+            assignment = self.schedule[_day][_watch]
+            # count stands for number of times the fill function auto assigned soldiersself.
+            count = 0
+            # we want to check if this specific watch is occupied. If not -> let's assign one.
+            if not assignment:
+                prediction = self.predict(_day, _watch)
+                print(prediction)
+                self.assign(prediction, _day, _watch)
+                count += 1
+        # we can should return something, why not the number of iterations?
+        return count
+
+    def switch(self, s1: tuple, s2: tuple):
+        """Switches between two soldiers at specific positions"""
+        # TODO: Implement the function
+        raise NotImplementedError
 
     def __str__(self):
         from tabulate import tabulate
