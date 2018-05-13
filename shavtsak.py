@@ -292,12 +292,12 @@ class Shavtsak:
 
     def fill(self):
         """Fills all empty spaces in schedule. NOTE: it uses the default values."""
+        count = 0
+        # count stands for number of times the fill function auto assigned soldiersself.
         for id in range(len(self.days)*len(self.watches)): # iterate over the flattened dictionary
             _day = self.days[int(id / len(self.watches))]
             _watch = self.watches[id % len(self.watches)]
-            assignment = self.schedule[_day][_watch]
-            # count stands for number of times the fill function auto assigned soldiersself.
-            count = 0
+            assignment = self.schedule[_day][_watch]            
             # we want to check if this specific watch is occupied. If not -> let's assign one.
             if not assignment:
                 prediction = self.predict(_day, _watch)
