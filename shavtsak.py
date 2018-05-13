@@ -227,7 +227,7 @@ class Shavtsak:
         It is determined by using the sorting algorithm and some basic rules for fairness,
         the rules are hardcoded, but they're pretty simple:
         - Only people with pazam smaller than 2 (only 0 and 1).
-        - A solider cannot be assigned to the kitchen two days in a row
+        - A solider cannot be assigned to the kitchen after two days of kitchen.
         :param day: the day in which the algorithm will calculate the optimal soldier for the kitchen
         :param n_soldiers: amount of soldiers to assign to kitchen.
         :return: calculated Soldier for the kitchen to be assigned.
@@ -244,8 +244,8 @@ class Shavtsak:
 
         s = self._sort(day, 'kitchen')  # getting the current day sort
 
-        # remove previous day soldiers from kitchen
-        for ksoldier in self.get(day - 1, 0):
+        # remove previous day, and the day beforehand soldiers from kitchen
+        for ksoldier in self.get(day - 1, 0) + self.get(day - 2, 0):
             if ksoldier in s:
                 s.remove(ksoldier)
 
