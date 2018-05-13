@@ -324,7 +324,7 @@ class Shavtsak:
         new.days = self.days
         new.watches = self.watches
         new.schedule = self.schedule
-        new.reduced = .self.reduced
+        new.reduced = self.reduced
         new.name = self.name
         return new
 
