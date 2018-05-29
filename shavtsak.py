@@ -90,20 +90,7 @@ class Shavtsak:
         sorts the soldiers by their last watch, first is the most "do-nothing".
         :return: list of soldiers
         """
-        soldiers = self._gen_soldiers(day, watch)
-
-        def skey(s): return self.last(s, day, watch)[0] + self.next(s, day, watch)[0]
-        sorted_s = sorted(soldiers, key=skey, reverse=True)
-        # remove the kitchen soldier in that day, a soldier that is in kitchen shouldn't be checked.
-        try:
-            today_kitchen = self.get(day, 'kitchen')
-            for soldier in today_kitchen:
-                sorted_s.remove(soldier)
-
-        except IndexError:
-            pass
-
-        return list(sorted_s)
+        pass
 
     def get(self, day: (str, int), watch: (str, int)):
         """
@@ -232,32 +219,7 @@ class Shavtsak:
         :param n_soldiers: amount of soldiers to assign to kitchen.
         :return: calculated Soldier for the kitchen to be assigned.
         """
-        if day in (self.days[0], 0):  # the week starts at sunday, we can't just check the previous day
-            # if this happens, we just pick random soldiers.
-            from random import shuffle
-            shuffle(self.soldiers)
-
-        if type(day) is str:
-            # We want to iterate to the previous day. Assumption made that it's not the first day.
-            # In that case, we will never get ID of day - 1
-            day = self.days.index(day)
-
-        s = self._sort(day, 'kitchen')  # getting the current day sort
-
-        # remove previous day, and the day beforehand soldiers from kitchen
-        for ksoldier in self.get(day - 1, 0) + self.get(day - 2, 0):
-            if ksoldier in s:
-                s.remove(ksoldier)
-
-        # we cant allow people with pazam to be assigned to kitchen, so we have to filter them out.
-        filtered = list(filter(lambda soldier: soldier.pazam < 2, s))
-
-        if len(filtered) < n_soldiers:
-            print('Error: number of soldiers is insufficient')
-            # TODO: do something with this, maybe raise the pazam threshold.
-
-        # all that's left is to assign the first n soldiers to the kitchen
-        return filtered[0:n_soldiers]
+        pass
 
     @explicit_checker
     def predict(self, day, watch, n_soldiers=2, force=False, explicit_params=None):
@@ -269,41 +231,11 @@ class Shavtsak:
         :param force: if this flag is true, it will overwrite the watch no matter what
         :return: returns a list of soldiers for assignment based on number of soldiers
         """
-        if watch in ('kitchen', 0):
-            if 'n_soldiers' in explicit_params:
-                return self.kitchen(day, n_soldiers)
-            else:
-                return self.kitchen(day, 1)
-
-        if type(day) is int:
-            day = self.days[day]
-
-        if type(watch) is int:
-            watch = self.watches[watch]
-
-        if self.schedule[day][watch] and not force and n_soldiers is 2:
-            # if there's an assignment in this particular day and watch
-            # raise an error, because we cant predict something that isn't this day
-            return self.schedule[day][watch]
-
-        soldiers = self._sort(day, watch)
-        return soldiers[:n_soldiers]
+        pass
 
     def fill(self):
         """Fills all empty spaces in schedule. NOTE: it uses the default values."""
-        count = 0
-        # count stands for number of times the fill function auto assigned soldiersself.
-        for id in range(len(self.days)*len(self.watches)): # iterate over the flattened dictionary
-            _day = self.days[int(id / len(self.watches))]
-            _watch = self.watches[id % len(self.watches)]
-            assignment = self.schedule[_day][_watch]
-            # we want to check if this specific watch is occupied. If not -> let's assign one.
-            if not assignment:
-                prediction = self.predict(_day, _watch)
-                self.assign(prediction, _day, _watch)
-                count += 1
-        # we can should return something, why not the number of iterations?
-        return count
+        pass
 
     def switch(self, s1: tuple, s2: tuple):
         """Switches between two soldiers at specific positions"""
@@ -321,11 +253,11 @@ class Shavtsak:
 
     def copy(self):
         new = Shavtsak(self.soldiers)
-        new.days = self.days
-        new.watches = self.watches
-        new.schedule = self.schedule
-        new.reduced = self.reduced
-        new.name = self.name
+        new.days = self.days.copy()
+        new.watches = self.watches.copy()
+        new.schedule = {day: {watch: self.schedule[day][watch].copy() for watch in self.watches} for day in self.days}
+        new.reduced = self.reduced.copy()
+        new.name = '' + self.name
         return new
 
     def __str__(self):
