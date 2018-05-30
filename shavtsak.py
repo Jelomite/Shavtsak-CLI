@@ -252,6 +252,7 @@ class Shavtsak:
         return None
 
     def copy(self):
+        """creates new instance of shavtsak"""
         new = Shavtsak(self.soldiers)
         new.days = self.days.copy()
         new.watches = self.watches.copy()
