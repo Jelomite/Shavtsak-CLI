@@ -90,7 +90,16 @@ class Shavtsak:
         sorts the soldiers by their last watch, first is the most "do-nothing".
         :return: list of soldiers
         """
-        pass
+        skey = lambda s: self.last(s, day, watch)[0]
+        sorted_soldiers = sorted(self.soldiers, key=skey, reversed=True)
+        return sorted_soldiers
+
+    def _sort_kitchen(self, day):
+        skey = lambda soldier: self.last_kitchen(soldier, day)
+        filtered_soldiers = filter(lambda sl: sl.pazam < 2, self._gen_soldiers(day, 0))
+        sf = sorted(filtered_soldiers, key=skey, reverse=True)
+        return sf[0]
+
 
     def get(self, day: (str, int), watch: (str, int)):
         """
@@ -207,6 +216,15 @@ class Shavtsak:
             if soldier in self.get(int(wid / len(self.watches)), wid % 4):
                 return wid - watch_id, self.watches[wid % 4]
         return watch_id, None
+
+    def last_kitchen(self, soldier, day: str):
+        """
+        gives us the number of days before the last kitchen
+        """
+        for iday in self.days[self.days.index(day)::-1]:
+            if soldier in self.schedule[iday]['kitchen']:
+                return self.days.index(day) - self.days.index(iday) - 1
+        return self.days.index(day)
 
     def kitchen(self, day, n_soldiers):
         """
