@@ -5,7 +5,7 @@ class Shavtsak:
         All you need to do is to specify the soldiers that are in the schedule.
         You can later reduce the soldiers for a specific day or period of time.
         """
-        self.days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+        self.days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday1']
         self.watches = ['kitchen', 'morning', 'noon', 'night']
         # building the schedule dictionary based on two lists, the days and the watches.
         self.schedule = {day: {watch: [] for watch in self.watches} for day in self.days}
@@ -91,10 +91,64 @@ class Shavtsak:
         :return: list of soldiers
         """
         skey = lambda s: self.last(s, day, watch)[0]
-        sorted_soldiers = sorted(self.soldiers, key=skey, reversed=True)
+        sorted_soldiers = sorted(self._gen_soldiers(day, watch), key=skey, reverse=True)
+        if watch in (3, 'night'):
+            if type(day) is str:
+                day = self.days.index(day)
+            for soldier in self.get(day + 1, 0):
+                sorted_soldiers.remove(soldier)
+        for soldier in self.get(day, 0):
+            sorted_soldiers.remove(soldier)
         return sorted_soldiers
 
+    def autoa(self, day, watch, debug=False):
+        # type conversion from string to int. for iteration purposes.
+        if type(day) is str:
+            day = self.days.index(day)
+
+        if type(watch) is str:
+            watch = self.watches.index(watch)
+
+        # lets get the next watch, we'll do it with the watch ID algorithmselfself.
+        # if the next watch is kitchen, we simply go another one.
+        wid = day * len(self.watches) + watch + 1
+        if not wid % len(self.watches):
+            wid += 1
+
+
+        # we just create sorts and available soldiers.
+        current_sort = self._sort(day, watch)
+        next_sort = self._sort(int(wid / len(self.watches)), wid % len(self.watches))
+        current_soldiers = self._gen_soldiers(day, watch)
+        next_soldiers = self._gen_soldiers(int(wid / len(self.watches)), wid % len(self.watches))
+        next_assignment = self.get(int(wid / len(self.watches)), wid % len(self.watches))
+
+        # create a difference array by subtructing next from current.
+        diff = current_sort.copy()
+        if current_soldiers == next_soldiers and current_sort != next_sort:
+            for soldier in next_sort:
+                if soldier in diff:
+                    diff.remove(soldier)
+
+        # now we remove the difference from the current so we won't get any duplicates in soldiers.
+        new_curr = current_sort.copy()
+        for soldier in diff:
+            if soldier in new_curr:
+                new_curr.remove(soldier)
+
+        # now, let's add the two arrays.
+        modified = diff + new_curr
+        # and remove the soldiers from the next assignment so we wont get a conflicting situation
+        for soldier in next_assignment:
+            if soldier in modified:
+                modified.remove(soldier)
+
+        return modified[:2]
+
+
     def _sort_kitchen(self, day):
+        if type(day) is int:
+            day = self.days[day]
         skey = lambda soldier: self.last_kitchen(soldier, day)
         filtered_soldiers = filter(lambda sl: sl.pazam < 2, self._gen_soldiers(day, 0))
         sf = sorted(filtered_soldiers, key=skey, reverse=True)
@@ -108,11 +162,14 @@ class Shavtsak:
         :param watch: desired watch, str or ID (0 - kitchen, 1 - morning... 2 - night)
         :return: list of soldiers in the desired watch
         """
-        if type(day) is int:
-            day = self.days[day]
+        try:
+            if type(day) is int:
+                day = self.days[day]
 
-        if type(watch) is int:
-            watch = self.watches[watch]
+            if type(watch) is int:
+                watch = self.watches[watch]
+        except IndexError:
+            return []
 
         return self.schedule[day][watch]
 
