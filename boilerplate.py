@@ -5,11 +5,9 @@ sherman = Soldier('Sherman', 0)
 gil = Soldier('Gil', 0)
 karol = Soldier('Karol', 3)
 hadar = Soldier('Hadar', 1)
-mark = Soldier('Mark', 2)
 shahar = Soldier('Shahar', 2)
 noy = Soldier('Noy', 2)
 yahli = Soldier('Yahli', 0)
 luski = Soldier('Luski', 0)
-shemer = Soldier('Shemer', 2)
 
-soldiers = [adam, sherman, gil, karol, hadar, shahar, noy, yahli, luski, shemer]
+soldiers = [adam, sherman, gil, karol, hadar, shahar, noy, yahli, luski]
