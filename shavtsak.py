@@ -95,10 +95,9 @@ class Shavtsak:
         if watch in (3, 'night'):
             if type(day) is str:
                 day = self.days.index(day)
-            for soldier in self.get(day + 1, 0):
-                sorted_soldiers.remove(soldier)
-        for soldier in self.get(day, 0):
-            sorted_soldiers.remove(soldier)
+            sorted_soldiers = [soldier for soldier in sorted_soldiers if soldier not in self.get(day + 1, 0)]
+
+        sorted_soldiers = [soldier for soldier in sorted_soldiers if soldier not in self.get(day, 0)]
         return sorted_soldiers
 
     def autoa(self, day, watch, debug=False):
@@ -127,27 +126,14 @@ class Shavtsak:
         next_assignment = self.get(int(wid / len(self.watches)), wid % len(self.watches))
 
         # create a difference array by subtructing next from current.
-        diff = current_sort.copy()
-        if current_soldiers == next_soldiers and current_sort != next_sort:
-            for soldier in next_sort:
-                if soldier in diff:
-                    diff.remove(soldier)
+        diff = [soldier for soldier in current_sort if soldier not in next_sort]
 
         # now we remove the difference from the current so we won't get any duplicates in soldiers.
-        new_curr = current_sort.copy()
-        for soldier in diff:
-            if soldier in new_curr:
-                new_curr.remove(soldier)
-
-        # now, let's add the two arrays.
+        new_curr = [soldier for soldier in current_sort if soldier not in diff]
         modified = diff + new_curr
+
         # and remove the soldiers from the next assignment so we wont get a conflicting situation
-        for soldier in next_assignment:
-            if soldier in modified:
-                modified.remove(soldier)
-
-        return modified[:2]
-
+        return [soldier for soldier in modified if soldier not in next_assignment]
 
     def _sort_kitchen(self, day):
         if type(day) is int:
@@ -155,7 +141,7 @@ class Shavtsak:
         skey = lambda soldier: self.last_kitchen(soldier, day)
         filtered_soldiers = filter(lambda sl: sl.pazam < 2, self._gen_soldiers(day, 0))
         sf = sorted(filtered_soldiers, key=skey, reverse=True)
-        return sf[0]
+        return sf
 
 
     def get(self, day: (str, int), watch: (str, int)):
@@ -297,7 +283,8 @@ class Shavtsak:
         :param n_soldiers: amount of soldiers to assign to kitchen.
         :return: calculated Soldier for the kitchen to be assigned.
         """
-        pass
+        sort = self._sort_kitchen(day)
+        return sort[:n_soldiers]
 
     @explicit_checker
     def predict(self, day, watch, n_soldiers=2, force=False, explicit_params=None):
@@ -309,11 +296,25 @@ class Shavtsak:
         :param force: if this flag is true, it will overwrite the watch no matter what
         :return: returns a list of soldiers for assignment based on number of soldiers
         """
-        pass
+        if watch in (0, 'kitchen'):
+            return self._sort_kitchen(day)[:n_soldiers if 'n_soldiers' in explicit_params else 1]
+        else:
+            return self.autoa(day, watch)[:n_soldiers]
 
     def fill(self):
         """Fills all empty spaces in schedule. NOTE: it uses the default values."""
-        pass
+        # first we fill in the kitchen
+        for day in self.schedule.keys():
+            if not self.get(day, 0):
+                soldiers = self.predict(day, 0)
+                self.assign(soldiers, day, 0)
+
+        # now it's time to fill in the rest
+        for day in self.schedule.keys():
+            for watch in list(self.schedule[day].keys())[1:]:
+                if not self.get(day, watch):
+                    soldiers = self.predict(day, watch)
+                    self.assign(soldiers, day, watch)
 
     def switch(self, s1: tuple, s2: tuple):
         """Switches between two soldiers at specific positions"""
