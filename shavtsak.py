@@ -1,17 +1,17 @@
 class Shavtsak:
-    def __init__(self, soldiers: list):
+    def __init__(self, soldiers: list, days=None, watches=None, name=''):
         """
         Constructor for the data structure. It's basically a nested dictionary with lists.
         All you need to do is to specify the soldiers that are in the schedule.
         You can later reduce the soldiers for a specific day or period of time.
         """
-        self.days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday1']
-        self.watches = ['kitchen', 'morning', 'noon', 'night']
+        self.days = days if days else ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+        self.watches = watches if watches else ['kitchen', 'morning', 'noon', 'night']
         # building the schedule dictionary based on two lists, the days and the watches.
         self.schedule = {day: {watch: [] for watch in self.watches} for day in self.days}
         self.soldiers = soldiers  # full list of all soldiers .
         self.reduced = []  # the segments in which the soldiers may differ.
-        self.name = ''
+        self.name = name
 
     def explicit_checker(f):
         """ function decorator to check if an optional value is being set, even if it's default """
