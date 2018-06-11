@@ -102,6 +102,9 @@ class Shavtsak:
         return sorted_soldiers
 
     def autoa(self, day, watch, debug=False):
+        """
+        auto assignment - it creates an assignment based on pre-defined rules.
+        """
         # type conversion from string to int. for iteration purposes.
         if type(day) is str:
             day = self.days.index(day)
