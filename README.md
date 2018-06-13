@@ -46,10 +46,12 @@ For full documentation, please continue reading.
 
 ## API
 
-### Shavtsak(soldiers: list)
+### Shavtsak(soldiers: list, days: list, watches: list, name: str)
 creates a new shavtsak that contains all the soldiers that it should assign
 
 type: Object
+
+days, watches and name are optional
 
 ### Soldier(name: str, pazam: int)
 creates a new soldier. the pazam indicates the number of iterations that are in the platoon. The youngest iteration of a trooper must be 0.
