@@ -79,8 +79,8 @@ class Shavtsak:
             # in case the current watch is in range of a reduced amount of soldiers,
             # we return the new soldiers that are listed in out list
             if current_watch_id in range(start, end + 1):
-                for soldier in soldiers:
-                    new_soldiers.remove(soldier)
+                new_soldiers = [soldier for soldier in new_soldiers if soldier not in soldiers]
+
 
         # once we removed all the relevant soldiers from our list, we can return it.
         return new_soldiers
@@ -117,6 +117,9 @@ class Shavtsak:
         if not wid % len(self.watches):
             wid += 1
 
+        previous_wid = day * len(self.watches) + watch - 1
+        if not previous_wid % len(self.watches):
+            previous_wid -= 1
 
         # we just create sorts and available soldiers.
         current_sort = self._sort(day, watch)
@@ -124,13 +127,14 @@ class Shavtsak:
         current_soldiers = self._gen_soldiers(day, watch)
         next_soldiers = self._gen_soldiers(int(wid / len(self.watches)), wid % len(self.watches))
         next_assignment = self.get(int(wid / len(self.watches)), wid % len(self.watches))
-
+        previous_assignment = self.get(int(previous_wid / len(self.watches)), previous_wid % len(self.watches))
         # create a difference array by subtructing next from current.
         diff = [soldier for soldier in current_sort if soldier not in next_sort]
 
         # now we remove the difference from the current so we won't get any duplicates in soldiers.
         new_curr = [soldier for soldier in current_sort if soldier not in diff]
         modified = diff + new_curr
+        modified = [soldier for soldier in modified if soldier not in previous_assignment]
 
         # and remove the soldiers from the next assignment so we wont get a conflicting situation
         return [soldier for soldier in modified if soldier not in next_assignment]
@@ -138,7 +142,7 @@ class Shavtsak:
     def _sort_kitchen(self, day):
         if type(day) is int:
             day = self.days[day]
-        skey = lambda soldier: self.last_kitchen(soldier, day)
+        skey = lambda soldier: self.last_kitchen(soldier, day) + self.next_kitchen(soldier, day)
         filtered_soldiers = filter(lambda sl: sl.pazam < 2, self._gen_soldiers(day, 0))
         sf = sorted(filtered_soldiers, key=skey, reverse=True)
         return sf
@@ -243,7 +247,7 @@ class Shavtsak:
             if soldier in self.get(int(wid / len(self.watches)), wid % 4):
                 n = watch_id - wid
                 last_watch = self.watches[wid % len(self.watches)]
-                n = n if last_watch is not 'kitchen' else n + 3
+                n = n if last_watch is not 'kitchen' else n - 1
                 return n, last_watch
         return watch_id, None
 
@@ -268,6 +272,15 @@ class Shavtsak:
         gives us the number of days before the last kitchen
         """
         for iday in self.days[self.days.index(day)::-1]:
+            if soldier in self.schedule[iday]['kitchen']:
+                return self.days.index(day) - self.days.index(iday) - 1
+        return self.days.index(day)
+
+    def next_kitchen(self, soldier, day: str):
+        """
+        just as last_kitchen, returns the number of days untill the next last_kitchenself.
+        """
+        for iday in self.days[self.days.index(day):]:
             if soldier in self.schedule[iday]['kitchen']:
                 return self.days.index(day) - self.days.index(iday) - 1
         return self.days.index(day)
