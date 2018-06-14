@@ -145,6 +145,16 @@ class Shavtsak:
         skey = lambda soldier: self.last_kitchen(soldier, day) + self.next_kitchen(soldier, day)
         filtered_soldiers = filter(lambda sl: sl.pazam < 2, self._gen_soldiers(day, 0))
         sf = sorted(filtered_soldiers, key=skey, reverse=True)
+
+        if self.days.index(day) % 7 == 0:
+            skey = lambda soldier: self.last_kitchen(soldier, day) + self.next_kitchen(soldier, day)
+            filtered_soldiers = filter(lambda sl: sl.pazam < 2, self._gen_soldiers(day, 3))
+            nsf = sorted(filtered_soldiers, key=skey, reverse=True)
+            soldiers = list(zip(sf, nsf))
+            soldiers = [x for t in soldiers for x in t]
+            print(soldiers, day)
+            return soldiers
+
         return sf
 
 
@@ -189,10 +199,6 @@ class Shavtsak:
         if type(soldiers) is Soldier:
             soldiers = [soldiers]
 
-        # All soldiers must be in self.soldiers, we cant just add new soldiers in random places.
-        for soldier in soldiers:
-            if soldier not in self.soldiers:
-                raise ValueError
 
         if type(day) is int:
             day = self.days[day]
@@ -285,20 +291,6 @@ class Shavtsak:
                 return self.days.index(day) - self.days.index(iday) - 1
         return self.days.index(day)
 
-    def kitchen(self, day, n_soldiers):
-        """
-        This function will try to guess the optimal soldier to be assigned to the kitchen.
-        It is determined by using the sorting algorithm and some basic rules for fairness,
-        the rules are hardcoded, but they're pretty simple:
-        - Only people with pazam smaller than 2 (only 0 and 1).
-        - A solider cannot be assigned to the kitchen after two days of kitchen.
-        :param day: the day in which the algorithm will calculate the optimal soldier for the kitchen
-        :param n_soldiers: amount of soldiers to assign to kitchen.
-        :return: calculated Soldier for the kitchen to be assigned.
-        """
-        sort = self._sort_kitchen(day)
-        return sort[:n_soldiers]
-
     @explicit_checker
     def predict(self, day, watch, n_soldiers=2, force=False, explicit_params=None):
         """
@@ -317,9 +309,15 @@ class Shavtsak:
     def fill(self):
         """Fills all empty spaces in schedule. NOTE: it uses the default values."""
         # first we fill in the kitchen
-        for day in self.schedule.keys():
+        for i, day in enumerate(self.schedule.keys()):
             if not self.get(day, 0):
                 soldiers = self.predict(day, 0)
+                if not i % 7 or 'sunday' in day:
+                    if self.get(i - 1, 0)[0] in self.soldiers:
+                        soldiers = self.predict(day, 0, n_soldiers=2)
+                    else:
+                        print('a')
+                        soldiers = self.get(i - 1, 0) + self.predict(day, 0)
                 self.assign(soldiers, day, 0)
 
         # now it's time to fill in the rest
