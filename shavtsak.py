@@ -152,7 +152,6 @@ class Shavtsak:
             nsf = sorted(filtered_soldiers, key=skey, reverse=True)
             soldiers = list(zip(sf, nsf))
             soldiers = [x for t in soldiers for x in t]
-            print(soldiers, day)
             return soldiers
 
         return sf
@@ -316,7 +315,6 @@ class Shavtsak:
                     if self.get(i - 1, 0)[0] in self.soldiers:
                         soldiers = self.predict(day, 0, n_soldiers=2)
                     else:
-                        print('a')
                         soldiers = self.get(i - 1, 0) + self.predict(day, 0)
                 self.assign(soldiers, day, 0)
 
